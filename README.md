@@ -2,14 +2,13 @@
 
 **Overview**
 
-SuperPy is a command-line program designed to manage an inventory of bought and sold products. The program allows you to buy products, sell products, list bought and sold products, calculate revenue over a period, plot revenue over a period, and advance the current date.
+SuperPy is a command-line program designed to manage an inventory of bought and sold products. The program allows you to buy products, sell products, delete products, list bought and sold products, calculate revenue over a period, plot revenue over a period, and advance the current date.
 
 **Commands**
 
-Buy a Product:
+**Buy a Product**
 
 To buy a product, use the following command:
-
 
 ```
 python your_superpy_file.py buy <product_name> <price> <expiration_date> [--bought_file <bought_file_path>]
@@ -41,6 +40,23 @@ Example:
 python your_superpy_file.py sell Apples 3.0
 ```
 
+**Delete a Product**
+
+To delete a bought product, use the following command:
+
+```
+python your_superpy_file.py delete <product_id> [--bought_file <bought_file_path>]
+```
+
+- <product_id>: The ID of the product you want to delete
+- <bought_file_path> (optional): Path to the bought file. Default is bought.csv
+
+Example:
+
+```
+python your_superpy_file.py delete 1
+```
+
 **List Bought and Sold Products**
 
 To list bought and sold products, use the following command:
@@ -65,6 +81,7 @@ To calculate revenue over a period, use the following command:
 ```
 python your_superpy_file.py revenue [--start_date <start_date>] [--end_date <end_date>]
 ```
+
 - <start_date> (optional): The start date of the revenue period in YYYY-MM-DD format
 - <end_date> (optional): The end date of the revenue period in YYYY-MM-DD format
 
@@ -77,9 +94,11 @@ python your_superpy_file.py revenue --start_date 2023-03-01 --end_date 2023-03-3
 **Plot Revenue Over a Period**
 
 To plot revenue over a period, use the following command:
+
 ```
 python your_superpy_file.py plot [--start_date <start_date>] [--end_date <end_date>]
 ```
+
 - <start_date> (optional): The start date of the revenue period in YYYY-MM-DD format
 - <end_date> (optional): The end date of the revenue period in YYYY-MM-DD format
 
@@ -103,6 +122,22 @@ Example:
 
 ```
 python your_superpy_file.py advance_time 7
+```
+
+**Set Time**
+
+To set the current date to a specific date, use the following command:
+
+```
+python your_superpy_file.py set_time <new_date>
+```
+
+- <new_date>: The new date in YYYY-MM-DD format
+
+Example:
+
+```
+python your_superpy_file.py set_time 2023-04-01
 ```
 
 # Conclusion
