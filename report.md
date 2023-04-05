@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(description='SuperPy')
 subparsers = parser.add_subparsers(help='Available commands', dest='command')
 ```
 
-Argparse allows us to define subparsers for each command, such as buy, sell, and list. Each subparser has its arguments defined, making it easy for users to understand what input is required. This approach eliminates the need for manual input parsing and validation, resulting in cleaner and more maintainable code.
+Argparse allows us to define subparsers for each command, such as buy, sell, list and delete. Each subparser has its arguments defined, making it easy for users to understand what input is required. This approach eliminates the need for manual input parsing and validation, resulting in cleaner and more maintainable code.
 
 **2. File I/O for Data Persistence**
 
