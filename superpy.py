@@ -2,7 +2,6 @@
 import argparse
 import csv
 import datetime
-from datetime import datetime as dt
 import os
 import matplotlib.pyplot as plt
 from prettytable import PrettyTable
@@ -28,7 +27,6 @@ def revenue(args):
     """
     # Initialize an empty revenue dictionary
     revenue_data = {}
-
     # If the user specified the plot flag, plot the revenue data over time
     if args.plot:
         plot_revenue(args.start_date, args.end_date)
@@ -40,7 +38,6 @@ def revenue(args):
         if args.calculate_total:
             total_revenue, table = calculate_revenue({'sold_data': revenue_data})
             print(table)
-            print(f"Total revenue: ${total_revenue:.2f}")
         # Otherwise, print a table of the revenue data
         else:
             table = create_pretty_table(revenue_data)
@@ -94,7 +91,7 @@ def write_bought(bought_data, bought_file):
 
 def buy(args):
     """
-    Buy a product and store its information.
+    Buy a product and add it to the inventory.
 
     Parameters
     ----------
@@ -105,33 +102,41 @@ def buy(args):
     -------
     None
     """
-    bought_file = args.bought_file
-    # Check if the bought file exists, create it if it doesn't
-    if not os.path.exists(bought_file):
-        with open(bought_file, 'w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(['date', 'product_name', 'price', 'expiration_date'])
-
     product_name = args.product_name
     price = args.price
     expiration_date = args.expiration_date
     buy_date = get_current_date().strftime('%Y-%m-%d')
 
-    # Create a dictionary representing the row to add to bought_data
-    row = {
-        'product_name': product_name,
-        'buy_price': price,
-        'expiration_date': expiration_date,
-        'buy_date': buy_date,
-    }
+    bought_file = 'bought.csv'
 
-    # Read current data from bought_data file
+    # Check if the bought file exists, create it if it doesn't
+    if not os.path.exists(bought_file):
+        with open(bought_file, 'w', newline='') as file:
+            writer = csv.writer(file, delimiter=';')
+            writer.writerow(['ID', 'PRODUCT_NAME', 'BUY_PRICE', 'EXPIRATION_DATE', 'BUY_DATE'])
+
+    # Read the existing bought data
     bought_data = read_bought(bought_file)
-    # Add the new row to the existing data
-    bought_data.append(row)
-    # Write the updated data back to the file
-    write_bought(bought_data, bought_file)
-    # Print confirmation message
+
+    # Generate a new ID for the product
+    new_id = max([int(row['ID']) for row in bought_data]) + 1 if bought_data else 1
+
+    # Add the new product to the bought data
+    new_product = {
+        'ID': new_id,
+        'PRODUCT_NAME': product_name,
+        'BUY_PRICE': price,
+        'EXPIRATION_DATE': expiration_date,
+        'BUY_DATE': buy_date,
+    }
+    bought_data.append(new_product)
+
+    # Write the updated bought data to the file
+    with open(bought_file, 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['ID', 'PRODUCT_NAME', 'BUY_PRICE', 'EXPIRATION_DATE', 'BUY_DATE'], delimiter=';')
+        writer.writeheader()
+        writer.writerows(bought_data)
+
     print('OK')
 
 
@@ -153,11 +158,11 @@ def delete_bought(args):
 
     # Find the bought product with the matching id
     for index, bought_row in enumerate(bought_data):
-        if bought_row['id'] == args.id:
+        if int(bought_row['ID']) == args.id:
             # If a matching product is found, delete the corresponding row
             del bought_data[index]
             # Write the updated data back to the file
-            write_bought(bought_data)
+            write_bought(bought_data, args.bought_file)
             # Print confirmation message
             print(f"Deleted product with id {args.id}")
             break
@@ -187,34 +192,64 @@ def sell(args):
     sold_data_file = 'sold.csv'
     if not os.path.exists(sold_data_file):
         with open(sold_data_file, 'w') as f:
-            f.write('id,bought_id,product_name,sell_price,sold_date\n')
+            f.write('SOLD_ID;BOUGHT_ID;PRODUCT_NAME;SELL_PRICE;SELL_DATE\n')
 
     # Read the data of bought products
     bought_data = read_bought(args.bought_file)
 
-    # Find the bought product with the matching name
+    # Print debug information
+    print("Bought products:")
+    for row in bought_data:
+        print(row)
+
+    # Find the bought product with the given name
+    found = False
     for bought_row in bought_data:
-        if bought_row['product_name'] == product_name:
+        if bought_row['PRODUCT_NAME'] == product_name and datetime.datetime.strptime(bought_row['EXPIRATION_DATE'], '%Y-%m-%d') > datetime.datetime.utcnow():
+            # Read current data from sold_data file
+            sold_data = read_sold()
+
+            # Generate a unique SOLD_ID for the new sale
+            max_sold_id = max([int(sold_row['SOLD_ID']) for sold_row in sold_data]) if sold_data else 0
+            new_sold_id = max_sold_id + 1
+
             # If a matching product is found, add a row to the sold data
             # with the relevant information
             sold_row = {
-                'bought_id': bought_row['id'],
-                'product_name': product_name,
-                'sell_price': price,
-                'sold_date': sold_date,
+                'SOLD_ID': new_sold_id,
+                'BOUGHT_ID': bought_row['ID'],
+                'PRODUCT_NAME': product_name,
+                'SELL_PRICE': price,
+                'SELL_DATE': sold_date,
             }
-            # Read current data from sold_data file
-            sold_data = read_sold()
             # Add the new row to the existing data
             sold_data.append(sold_row)
             # Write the updated data back to the file
             write_sold(sold_data)
             # Print confirmation message
             print('OK')
+            found = True
             break
-    else:
-        # If no matching product is found, print an error message
-        print('ERROR: Product not in stock.')
+
+    if not found:
+        # If no matching product is found, add a row to the sold data
+        # with the relevant information
+        sold_data = read_sold()
+        max_sold_id = max([int(sold_row['SOLD_ID']) for sold_row in sold_data]) if sold_data else 0
+        new_sold_id = max_sold_id + 1
+        sold_row = {
+            'SOLD_ID': new_sold_id,
+            'BOUGHT_ID': 'N/A',  # Indicate that this product was not bought from the inventory
+            'PRODUCT_NAME': product_name,
+            'SELL_PRICE': price,
+            'SELL_DATE': sold_date,
+        }
+        # Add the new row to the existing data
+        sold_data.append(sold_row)
+        # Write the updated data back to the file
+        write_sold(sold_data)
+        # Print confirmation message
+        print('OK')
 
 
 def delete_sold(args):
@@ -299,7 +334,7 @@ def list_products(args):
             days_till_exp = (datetime.datetime.strptime(row["EXPIRATION_DATE"], "%Y-%m-%d") - datetime.datetime.now()).days
 
             table.add_row([
-                row["ID"],
+                row["SOLD_ID"],
                 row["PRODUCT_NAME"],
                 row["BUY_DATE"],
                 row["BUY_PRICE"],
@@ -354,34 +389,17 @@ def read_sold():
     # Read the data from the 'sold.csv' file
     with open('sold.csv', 'r') as sold_file:
         # Create a CSV reader object
-        sold_reader = csv.DictReader(sold_file, delimiter=';')
+        sold_reader = csv.DictReader(sold_file, delimiter=',')
 
         # Initialize an empty list to store the data
         sold_data = []
 
         # Loop over each row in the 'sold.csv' file
         for sold_row in sold_reader:
-            # Change the key 'SOLD_DATE' to 'SELL_DATE'
-            sold_row['SOLD_DATE'] = sold_row.pop('SELL_DATE')
             # Append the row to the list of data
             sold_data.append(sold_row)
 
-        # If there is any data, create a PrettyTable and print it
-        if sold_data:
-            # Set the headers of the PrettyTable
-            table = PrettyTable()
-            table.field_names = ['SOLD_ID', 'PRODUCT_NAME', 'SELL_PRICE', 'SELL_DATE']
-
-            # Add each row of data to the PrettyTable
-            for row in sold_data:
-                # Replace 'SOLD_DATE' key with 'SELL_DATE'
-                row['SELL_DATE'] = row.pop('SOLD_DATE')
-                table.add_row([row['SOLD_ID'], row['PRODUCT_NAME'], row['SELL_PRICE'], row['SELL_DATE']])
-
-            # Print the PrettyTable
-            print(table)
-
-        return sold_data
+    return sold_data
 
 
 def write_sold(sold_data):
@@ -470,17 +488,21 @@ def get_revenue(args):
     args : argparse.Namespace
         The parsed command line arguments containing 'start_date' and 'end_date'.
     """
+    print("Getting revenue data...")
     # Set start_date and end_date based on the input arguments or default values
     start_date = args.start_date if args.start_date else "1900-01-01"
     end_date = args.end_date if args.end_date else "9999-12-31"
 
     # Read the sold data
     sold_data = read_sold()
+    print("All sold data:", sold_data)
 
     # Filter the sold data by the given date range
     filtered_sold_data = [
         row for row in sold_data if start_date <= row["SELL_DATE"] <= end_date
     ]
+
+    print("Filtered sold data:", filtered_sold_data)
 
     # Calculate daily revenue
     revenue_data = {}
@@ -492,6 +514,7 @@ def get_revenue(args):
         else:
             revenue_data[date] = sold_price
 
+    print("Revenue data:", revenue_data)
     return revenue_data
 
 
@@ -761,8 +784,10 @@ None
     parser_set_time.set_defaults(command='set_time')
 
     # Create parser for deleting bought products
-    delete_bought_parser = subparsers.add_parser('delete_bought', help='delete a row from the bought.csv file')
-    delete_bought_parser.add_argument('row_id', type=int, help='ID of the row to delete')
+    delete_bought_parser = subparsers.add_parser("delete_bought", help="delete a row from the bought.csv file")
+    delete_bought_parser.add_argument("id", type=int, help="The id of the bought product to delete.")
+    delete_bought_parser.add_argument("--bought_file", default="bought.csv", help="The bought file to delete from.")
+    delete_bought_parser.set_defaults(func=delete_bought)
 
     # Create parser for deleting sold products
     delete_sold_parser = subparsers.add_parser('delete_sold', help='Delete a sold product from the sales record')
