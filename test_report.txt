@@ -1,0 +1,34 @@
+Het is belangrijk om de functies in een logische volgorde te testen.
+Ik begon met het testen van de basisfuncties en ging daarna door naar
+de meer complexe functies die afhankelijk zijn van de basisfuncties.
+Hier is de volgorde waarin ik de functies heb getest:
+
+1. get_current_date() en set_current_date(new_date)
+2. initialize_data_files()
+3. read_bought() en write_bought(bought_data)
+4. read_sold() en write_sold(sold_data)
+5. filter_data_by_date()
+6. create_pretty_table(data)
+7. calculate_profit(bought_data, sold_data)
+8. calculate_revenue()
+9. plot_revenue(start_date, end_date)
+10. advance_time(days)
+
+Eerst testte ik de functies voor het verkrijgen en instellen van de huidige
+datum (get_current_date en set_current_date). Daarna testte ik de functies
+die verantwoordelijk zijn voor het initialiseren, lezen en schrijven van
+data (initialize_data_files, read_bought, write_bought, read_sold en write_sold).
+Dit zijn de basisfuncties waarop andere functies vertrouwen.
+
+Vervolgens testte ik filter_data_by_date en create_pretty_table, die worden
+gebruikt om de gegevens te filteren en weer te geven.
+
+Daarna testte ik de berekeningsfuncties, zoals calculate_profit en calculate_revenue,
+die de winst en inkomsten berekenen op basis van de gekochte en verkochte producten.
+
+Ten slotte testte ik plot_revenue en advance_time, die verantwoordelijk zijn voor
+het plotten van de inkomsten en het manipuleren van de huidige datum.
+
+Deze volgorde zorgde ervoor dat ik eerst de basisfuncties testte en eventuele fouten
+oploste voordat ik doorging met het testen van de complexere functies die afhankelijk
+zijn van deze basisfuncties.
