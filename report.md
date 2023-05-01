@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(description='SuperPy')
 subparsers = parser.add_subparsers(help='Available commands', dest='command')
 ```
 
-Argparse allows us to define subparsers for each command, such as buy, sell, list, and delete. Each subparser has its arguments defined, making it easy for users to understand what input is required. This approach eliminates the need for manual input parsing and validation, resulting in cleaner and more maintainable code.
+Argparse allows us to define subparsers for each command, such as buy, sell, list and delete. Each subparser has its arguments defined, making it easy for users to understand what input is required. This approach eliminates the need for manual input parsing and validation, resulting in cleaner and more maintainable code.
 
 **2. File I/O for Data Persistence**
 
@@ -37,4 +37,8 @@ def filter_data_by_date(data, start_date, end_date):
 
 By leveraging the datetime module, we can parse, compare, and manipulate dates with ease. This approach provides a reliable and efficient method for handling date filtering tasks in the SuperPy program.
 
+<<<<<<< HEAD
 In conclusion, the SuperPy program employs argparse for streamlined input processing, uses file I/O for data persistence, and takes advantage of the datetime module for date filtering. These technical elements contribute to a more efficient, user-friendly, and maintainable solution for inventory management.
+=======
+In conclusion, the SuperPy program employs argparse for streamlined input processing, uses file I/O for data persistence, and takes advantage of the datetime module for date filtering. These technical elements contribute to a more efficient, user-friendly, and maintainable solution for inventory management.
+>>>>>>> 01f5b9c4465583d1ff6dbce646978c856c03aad0
