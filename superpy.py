@@ -84,7 +84,7 @@ def write_bought(bought_data, bought_file):
     """
     with open(bought_file, "w", newline="") as file:
         writer = csv.writer(file, delimiter=";")
-        writer.writerow(["SOLD_ID", "PRODUCT_NAME", "BUY_PRICE", "EXPIRATION_DATE", "BUY_DATE"])
+        writer.writerow(["ID", "PRODUCT_NAME", "BUY_PRICE", "EXPIRATION_DATE", "BUY_DATE"])
         for row in bought_data:
             writer.writerow(row.values())
 
@@ -192,7 +192,7 @@ def sell(args):
     sold_data_file = 'sold.csv'
     if not os.path.exists(sold_data_file):
         with open(sold_data_file, 'w') as f:
-            f.write('SOLD_ID;BOUGHT_ID;PRODUCT_NAME;SELL_PRICE;SELL_DATE\n')
+            f.write('ID;BOUGHT_ID;PRODUCT_NAME;SELL_PRICE;SELL_DATE\n')
 
     # Read the data of bought products
     bought_data = read_bought(args.bought_file)
@@ -210,13 +210,13 @@ def sell(args):
             sold_data = read_sold()
 
             # Generate a unique SOLD_ID for the new sale
-            max_sold_id = max([int(sold_row['SOLD_ID']) for sold_row in sold_data]) if sold_data else 0
-            new_sold_id = max_sold_id + 1
+            max_id = max([int(sold_row['ID']) for sold_row in sold_data]) if sold_data else 0
+            new_id = max_id + 1
 
             # If a matching product is found, add a row to the sold data
             # with the relevant information
             sold_row = {
-                'SOLD_ID': new_sold_id,
+                'ID': new_id,
                 'BOUGHT_ID': bought_row['ID'],
                 'PRODUCT_NAME': product_name,
                 'SELL_PRICE': price,
@@ -235,11 +235,11 @@ def sell(args):
         # If no matching product is found, add a row to the sold data
         # with the relevant information
         sold_data = read_sold()
-        max_sold_id = max([int(sold_row['SOLD_ID']) for sold_row in sold_data]) if sold_data else 0
-        new_sold_id = max_sold_id + 1
+        max_id = max([int(sold_row['ID']) for sold_row in sold_data]) if sold_data else 0
+        new_id = max_id + 1
         sold_row = {
-            'SOLD_ID': new_sold_id,
-            'BOUGHT_ID': 'N/A',  # Indicate that this product was not bought from the inventory
+            'ID': new_id,
+            'BOUGHT_ID': bought_row['ID'],
             'PRODUCT_NAME': product_name,
             'SELL_PRICE': price,
             'SELL_DATE': sold_date,
@@ -270,7 +270,7 @@ def delete_sold(args):
 
     # Find the sold product with the matching id
     for index, sold_row in enumerate(sold_data):
-        if sold_row['id'] == args.id:
+        if sold_row['ID'] == args.id:
             # If a matching product is found, delete the corresponding row
             del sold_data[index]
             # Write the updated data back to the file
@@ -325,7 +325,7 @@ def list_products(args):
             sold_date = ""
             sold_price = ""
             for sold_row in sold_data:
-                if sold_row["SOLD_ID"] == row["ID"]:
+                if sold_row["ID"] == row["ID"]:
                     sold = "Yes"
                     sold_date = sold_row["SELL_DATE"]
                     sold_price = sold_row["SELL_PRICE"]
@@ -334,7 +334,7 @@ def list_products(args):
             days_till_exp = (datetime.datetime.strptime(row["EXPIRATION_DATE"], "%Y-%m-%d") - datetime.datetime.now()).days
 
             table.add_row([
-                row["SOLD_ID"],
+                row["ID"],
                 row["PRODUCT_NAME"],
                 row["BUY_DATE"],
                 row["BUY_PRICE"],
@@ -389,7 +389,7 @@ def read_sold():
     # Read the data from the 'sold.csv' file
     with open('sold.csv', 'r') as sold_file:
         # Create a CSV reader object
-        sold_reader = csv.DictReader(sold_file, delimiter=',')
+        sold_reader = csv.DictReader(sold_file, delimiter=';')
 
         # Initialize an empty list to store the data
         sold_data = []
@@ -421,7 +421,7 @@ def write_sold(sold_data):
     with open('sold.csv', 'w', newline='') as sold_file:
         # Create a DictWriter object that writes to the 'sold.csv' file,
         # using the field names from the first row of the data as the headers
-        sold_writer = csv.DictWriter(sold_file, fieldnames=sold_data[0].keys())
+        sold_writer = csv.DictWriter(sold_file, fieldnames=sold_data[0].keys(), delimiter=';')
         # Write the headers to the 'sold.csv' file
         sold_writer.writeheader()
         # Write the data roles to the 'sold.csv' file
@@ -791,7 +791,8 @@ None
 
     # Create parser for deleting sold products
     delete_sold_parser = subparsers.add_parser('delete_sold', help='Delete a sold product from the sales record')
-    delete_sold_parser.add_argument('sold_id', type=int, help='ID of the sold product to delete')
+    delete_sold_parser.add_argument('id', type=int, help='ID of the sold product to delete')
+    delete_sold_parser.set_defaults(func=delete_sold)
 
     # Parse the arguments and execute the appropriate command
     args = parser.parse_args()
@@ -829,11 +830,11 @@ None
         bought_data = read_bought()
         # Find the bought product with the matching name
         for bought_row in bought_data:
-            if bought_row['product_name'] == product_name:
+            if bought_row['PRODUCT_NAME'] == product_name:
                 # If a matching product is found, add a row to the sold data
                 # with the relevant information
-                sold_row = {'bought_id': bought_row['id'], 'product_name':
-                            product_name, 'sell_price': price, 'sold_date': sold_date}
+                sold_row = {'ID': bought_row['ID'], 'PRODUCT_NAME':
+                            product_name, 'SELL_PRICE': price, 'SELL_DATE': sold_date}
                 sold_data = read_sold()
                 sold_data.append(sold_row)
                 write_sold(sold_data)
@@ -842,6 +843,7 @@ None
         else:
             # If no matching product is found, print an error message
             print('ERROR: Product not in stock.')
+
 
     elif args.command == 'list':
         # Retrieve the start and end dates from the command line arguments
@@ -858,14 +860,15 @@ None
             bought_data = filter_data_by_date(bought_data, start_date, end_date)
             sold_data = filter_data_by_date(sold_data, start_date, end_date)
         # Create a PrettyTable for the bought data
-        bought_table = create_pretty_table(bought_data, ['product_name', 'buy_price', 'expiration_date', 'buy_date'])
+        bought_table = create_pretty_table(bought_data, ['ID', 'PRODUCT_NAME', 'BUY_PRICE', 'EXPIRATION_DATE', 'BUY_DATE'])
         # Create a PrettyTable for the sold data
-        sold_table = create_pretty_table(sold_data, ['product_name', 'sell_price', 'sold_date'])
+        sold_table = create_pretty_table(sold_data, ['ID', 'PRODUCT_NAME', 'SELL_PRICE', 'SELL_DATE'])
         # Print the tables
         print('Bought:')
         print(bought_table)
         print('Sold:')
         print(sold_table)
+
 
     elif args.command == 'plot':
         # Get start and end dates from command line arguments

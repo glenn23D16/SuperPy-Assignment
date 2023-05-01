@@ -45,7 +45,7 @@ python your_superpy_file.py sell Apples 3.0
 To delete a bought product, use the following command:
 
 ```
-python your_superpy_file.py delete <product_id>
+python your_superpy_file.py delete_bought <product_id>
 ```
 
 - <product_id>: The ID of the product you want to delete
@@ -53,7 +53,7 @@ python your_superpy_file.py delete <product_id>
 Example:
 
 ```
-python your_superpy_file.py delete 1
+python your_superpy_file.py delete_bought 1
 ```
 
 **List Bought and Sold Products**
