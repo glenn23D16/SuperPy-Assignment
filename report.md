@@ -37,8 +37,4 @@ def filter_data_by_date(data, start_date, end_date):
 
 By leveraging the datetime module, we can parse, compare, and manipulate dates with ease. This approach provides a reliable and efficient method for handling date filtering tasks in the SuperPy program.
 
-<<<<<<< HEAD
 In conclusion, the SuperPy program employs argparse for streamlined input processing, uses file I/O for data persistence, and takes advantage of the datetime module for date filtering. These technical elements contribute to a more efficient, user-friendly, and maintainable solution for inventory management.
-=======
-In conclusion, the SuperPy program employs argparse for streamlined input processing, uses file I/O for data persistence, and takes advantage of the datetime module for date filtering. These technical elements contribute to a more efficient, user-friendly, and maintainable solution for inventory management.
->>>>>>> 01f5b9c4465583d1ff6dbce646978c856c03aad0
